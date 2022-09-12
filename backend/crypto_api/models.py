@@ -51,7 +51,7 @@ class Asset(models.Model):
 class Transaction(models.Model):
   id = models.AutoField(primary_key=True)
   portfolio_linked = models.ForeignKey(Portfolio, on_delete=models.CASCADE)
-  coin = models.ForeignKey(Asset, on_delete=models.CASCADE)
+  coin = models.CharField(max_length=255)
   transaction_type = models.CharField(max_length=200)
   amount = models.FloatField()
   price = models.FloatField(default=0)
@@ -74,24 +74,24 @@ class Log_Data(models.Model):
 
 @receiver(pre_save, sender=Transaction)
 def transaction_created(instance, *args, **kwargs):
+  print('signal triggered')
   if instance.transaction_type == 'buy':
-    if Asset.objects.filter(Q(name=instance.coin) and Q(portfolio=instance.portfolio_linked)).exists():
+    
+    if Asset.objects.filter(name=instance.coin, portfolio=instance.portfolio_linked).exists():
+      print('buy signal triggered')
       portfolio = Portfolio.objects.get(name=instance.portfolio_linked)
       asset = Asset.objects.get(name=instance.coin)
 
       value = getattr(Asset.objects.get(name=instance.coin), 'value')
       amount = getattr(Asset.objects.get(name=instance.coin), 'amount')
       
-      response = requests.get('https://api.coingecko.com/api/v3/simple/price', params={'ids':instance.coin, 'vs_currencies':'usd'}).json()
-      price = response[str(instance.coin).lower()]['usd']
-      
-      instance.price = price
       asset.amount = amount + instance.amount
       asset.save()
       
       # Log_Data.objects.create(description='transaction-buy', data_logged='transaction', current_balance=portfolio.balance)
     else: 
-      Asset.objects.create(name=instance.coin, amount=instance.amount, portfolio_id='3', value=(instance.price*instance.amount))
+      portfolio = Portfolio.objects.get(name=instance.portfolio_linked)
+      Asset.objects.create(name=instance.coin, amount=instance.amount, portfolio=portfolio, value=(instance.price*instance.amount))
       asset = Asset.objects.get(name=instance.coin)
      
       value = getattr(Asset.objects.get(name=instance.coin), 'value')
@@ -124,9 +124,10 @@ def transaction_created(instance, *args, **kwargs):
 @receiver(post_save, sender=Transaction)
 def calculateAveragePrice(instance, *args, **kwargs):
   asset = Asset.objects.get(name=instance.coin)
-  transactions = Transaction.objects.all()
+  transactions = Transaction.objects.filter(portfolio_linked=instance.portfolio_linked)
 
   for transaction in transactions:
     average_price = Transaction.objects.filter(coin=instance.coin).aggregate(Avg('price'))
     asset.average_price = average_price['price__avg']
     asset.save()
+

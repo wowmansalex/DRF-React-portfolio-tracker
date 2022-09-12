@@ -114,9 +114,9 @@ def transaction_list_byAsset(request, coin):
 @api_view(['GET', 'POST']) 
 @permission_classes([IsAuthenticated])
 # get all log data linked to requested portfolio
-def get_log_data(request):
+def get_log_data(request, portfolio_linked):
   if request.method == 'GET':
-    data = Log_Data.objects.get(portfolio_linked=portfolio_name)
+    data = Log_Data.objects.get(portfolio_linked=portfolio_linked)
 
     serializer = LogDataSerializer(data, context={'request':request}, many=True)
 

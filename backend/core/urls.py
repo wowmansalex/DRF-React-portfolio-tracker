@@ -26,5 +26,5 @@ urlpatterns = [
     path('api/crypto/transaction/<transaction_id>', views.transaction_detail, name='transaction_detail'),
 
     #log data endpoints
-    path('api/log_data/<portfolio_linked>', views.get_log_data)
+    path('api/crypto/log_data/<portfolio_linked>', views.get_log_data)
 ]
