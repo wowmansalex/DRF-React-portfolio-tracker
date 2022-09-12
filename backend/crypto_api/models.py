@@ -40,6 +40,7 @@ class Asset(models.Model):
   id = models.AutoField(primary_key=True)
   portfolio = models.ForeignKey(Portfolio, on_delete=models.CASCADE)
   name = models.CharField(max_length=200)
+  price_24h = models.FloatField(default=0)
   current_price = models.FloatField(default=0)
   average_price = models.FloatField(default=0)
   value = models.FloatField(default=0)

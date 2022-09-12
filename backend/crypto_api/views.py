@@ -11,6 +11,9 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from .models import CustomUser, Portfolio, Asset, Transaction, Log_Data
 from .serializers import *
 
+from datetime import timedelta
+import time
+
 #authentication views
 class MyTokenObtainPairView(TokenObtainPairView):
     serializer_class = MyTokenObtainPairSerializer
@@ -65,6 +68,24 @@ def asset_list(request, portfolio_id):
   if request.method == 'GET':
     data = Asset.objects.filter(portfolio_id=portfolio_id)
 
+    for item in data: 
+      response_current_price = requests.get('https://api.coingecko.com/api/v3/simple/price', params={'ids':item.name, 'vs_currencies':'usd'}).json()
+      response_price_24H = requests.get(f'https://api.coingecko.com/api/v3/coins/{item.name.lower()}/market_chart?vs_currency=usd&days=1').json()
+
+      yesterday = time.time()*1000 - 24*60*60*1000
+      print(yesterday)
+
+      prices = response_price_24H['prices']
+
+      for price in prices:
+        if  price[0] - yesterday <= 60000:
+          item.price_24h = price[1]
+          print(item.price_24h)
+
+      item.current_price = response_current_price[str(item.name).lower()]['usd']
+      item.value = item.current_price * item.amount
+      item.save()
+
     serializer = AssetSerializer(data, context={'request': request}, many=True)
 
     return Response(serializer.data)
@@ -112,8 +133,6 @@ def get_log_data(request, portfolio_linked):
   if request.method == 'GET':
     data = Log_Data.objects.all()
     serializer = LogDataSerializer(data, context={'request':request}, many=True)
-
-    print(serializer.data)
 
     return Response(serializer.data)
 

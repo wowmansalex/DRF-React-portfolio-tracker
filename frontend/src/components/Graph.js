@@ -8,8 +8,6 @@ import { Chart } from 'react-chartjs-2';
 const Graph = () => {
 	const logData = useSelector(state => state.portfolio.logData);
 
-	console.log(logData);
-
 	let chartData = {
 		labels: logData.timestamp,
 

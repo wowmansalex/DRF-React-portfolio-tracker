@@ -51,7 +51,7 @@ class PortfolioSerializer(serializers.ModelSerializer):
 class AssetSerializer(serializers.ModelSerializer):
   class Meta:
     model = Asset
-    fields = ('portfolio', 'id', 'name', 'current_price', 'average_price', 'value', 'amount')
+    fields = ('portfolio', 'id', 'name', 'current_price', 'price_24h' , 'average_price', 'value', 'amount')
 
 class TransactionSerializer(serializers.ModelSerializer):
   class Meta:

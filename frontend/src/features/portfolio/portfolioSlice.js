@@ -168,10 +168,54 @@ export const fetchCoins = createAsyncThunk('logData/fetchCoins', async () => {
 	return response.data;
 });
 
+export const fetch24hprice = createAsyncThunk(
+	'logData/fetch24hprice',
+	async (coin, { rejectWithValue }) => {
+		try {
+			const response = await axios.get(
+				`https://api.coingecko.com/api/v3/coins/${coin}/ohlc?vs_currency=usd&days=1`
+			);
+			let yesterday = new Date().getTime() - 24 * 60 * 60 * 1000;
+
+			console.log(yesterday);
+
+			let prices = response.data;
+			let date_24H = [];
+			let price_24h = 0;
+
+			response.data.map(date => {
+				if (yesterday - date[0] < 3600) {
+					date_24H = date[0];
+				}
+			});
+
+			console.log('date 24H:' + date_24H);
+
+			prices.map(price => {
+				if (price[0] == date_24H) {
+					price_24h = price[1];
+				}
+			});
+
+			console.log(price_24h);
+			return { coin, price_24h };
+		} catch (error) {
+			if (error.response && error.response.data.message) {
+				return rejectWithValue(error.response.data.message);
+			} else {
+				return rejectWithValue(error.message);
+			}
+		}
+	}
+);
+
 const initialState = {
 	id: 1,
 	portfolio_name: 'test',
-	assets: [],
+	assets: {
+		price_24hchanges: [],
+		assets: [],
+	},
 	transactions: [],
 	balance: 0,
 	logData: {
@@ -212,7 +256,7 @@ const portfolioSlice = createSlice({
 		[fetchAssets.fulfilled]: (state, { payload }) => {
 			console.log('fetch assets fulfilled');
 			state.isLoading = false;
-			state.assets = payload;
+			state.assets.assets = payload;
 		},
 		[fetchAssets.rejected]: (state, { payload }) => {
 			state.error = payload;
@@ -277,7 +321,7 @@ const portfolioSlice = createSlice({
 					timeZone: 'UTC',
 				});
 			});
-			console.log(payload, 'fetch log data fulfilled');
+			console.log('fetch log data fulfilled');
 		},
 		[fetchLogData.rejected]: state => {
 			state.isLoading = false;
@@ -296,6 +340,18 @@ const portfolioSlice = createSlice({
 		[fetchCoins.rejected]: state => {
 			state.isLoading = false;
 			console.log('fetch coins rejected');
+		},
+		[fetch24hprice.pending]: state => {
+			// state.isLoading = true;
+			console.log('fetch 24h price pending');
+		},
+		[fetch24hprice.fulfilled]: (state, { payload }) => {
+			state.assets.price_24hchanges = payload;
+			console.log(payload, 'fetch 24h price fulfilled');
+		},
+		[fetch24hprice.rejected]: (state, { payload }) => {
+			state.error = payload;
+			console.log(payload, 'fetch 24h price rejected');
 		},
 	},
 });

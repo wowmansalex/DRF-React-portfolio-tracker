@@ -13,7 +13,7 @@ import {
 // import { fetchGraphData, fetchCoins } from '../features/graphSlice';
 
 import { Button } from 'reactstrap';
-import { Link } from 'react-router-dom';
+import Loading from '../components/Loading';
 
 import AssetList from '../components/AssetsList';
 import Graph from '../components/Graph';
@@ -48,27 +48,29 @@ const PortfolioScreen = () => {
 	return (
 		<div className='container'>
 			<div>
-				<h4>Current Balance</h4>
 				<div>
-					{new Intl.NumberFormat('en-IN', {
-						style: 'currency',
-						currency: 'USD',
-					}).format(portfolio.balance)}
+					<h4>Current Balance</h4>
+					<div>
+						{new Intl.NumberFormat('en-IN', {
+							style: 'currency',
+							currency: 'USD',
+						}).format(portfolio.balance)}
+					</div>
 				</div>
-			</div>
-			<Graph />
-			<div className='d-flex justify-content-between'>
-				<h4 className=''>Your Assets</h4>
-				<Button>
-					<a
-						className='text-light text-decoration-none'
-						href='/add-transaction'>
-						Add New
-					</a>
-				</Button>
-			</div>
-			<div>
-				<AssetList />
+				<Graph />
+				<div className='d-flex justify-content-between'>
+					<h4 className=''>Your Assets</h4>
+					<Button>
+						<a
+							className='text-light text-decoration-none'
+							href='/add-transaction'>
+							Add New
+						</a>
+					</Button>
+				</div>
+				<div>
+					<AssetList />
+				</div>
 			</div>
 		</div>
 	);
