@@ -61,4 +61,4 @@ class TransactionSerializer(serializers.ModelSerializer):
 class LogDataSerializer(serializers.ModelSerializer):
   class Meta:
     model = Log_Data
-    fields = ('updated', 'description', 'current_balance')
+    fields = ('portfolio_linked', 'updated', 'description', 'current_balance')

@@ -18,7 +18,6 @@ const NewTransactionForm = () => {
 	let navigate = useNavigate();
 
 	const portfolio = useSelector(state => state.portfolio);
-	console.log(portfolio.portfolio_name);
 
 	const [formInput, setFormInput] = useState({
 		transaction_type: '',
@@ -53,13 +52,13 @@ const NewTransactionForm = () => {
 			});
 			return response.data;
 		};
+
 		fetchCurrentPrice();
-	}, [formInput.coin, formInput.date_added]);
+	}, [formInput.date_added]);
 
 	const { coin_names } = useSelector(state => state.portfolio.logData);
 
 	const handleChange = event => {
-		console.log(event.target.value);
 		if (event.target.id === 'select') {
 			// console.log(event.target.options[event.target.selectedIndex].text);
 			setFormInput(current => {
@@ -74,6 +73,7 @@ const NewTransactionForm = () => {
 				[event.target.name]: event.target.value,
 			});
 		}
+		console.log(event.target.value);
 	};
 
 	const handleSubmit = event => {

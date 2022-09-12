@@ -65,12 +65,6 @@ def asset_list(request, portfolio_id):
   if request.method == 'GET':
     data = Asset.objects.filter(portfolio_id=portfolio_id)
 
-    for item in data: 
-      response = requests.get('https://api.coingecko.com/api/v3/simple/price', params={'ids':item.name, 'vs_currencies':'usd'}).json()
-      item.current_price = response[str(item.name).lower()]['usd']
-      item.value = item.current_price * item.amount
-      item.save()
-
     serializer = AssetSerializer(data, context={'request': request}, many=True)
 
     return Response(serializer.data)
@@ -116,9 +110,10 @@ def transaction_list_byAsset(request, coin):
 # get all log data linked to requested portfolio
 def get_log_data(request, portfolio_linked):
   if request.method == 'GET':
-    data = Log_Data.objects.get(portfolio_linked=portfolio_linked)
-
+    data = Log_Data.objects.all()
     serializer = LogDataSerializer(data, context={'request':request}, many=True)
+
+    print(serializer.data)
 
     return Response(serializer.data)
 
@@ -149,9 +144,9 @@ def portfolio_detail(request, portfolio_id):
 
     data.balance = total_asset_value
 
-    data.save()
+    Log_Data.objects.create(portfolio_linked=data, description='balance-update', data_logged='portfolio-balance', current_balance=data.balance)
 
-    # Log_Data.objects.create(description='balance-update', data_logged='portfolio-balance', current_balance=data.balance)
+    data.save()
 
     serializer = PortfolioSerializer(data, context={'request': request}, many=False)
     return Response(serializer.data)
@@ -209,12 +204,12 @@ def asset_current_price(request, id):
 @api_view(['PUT', 'DELETE'])
 @permission_classes([IsAuthenticated])
 # get or update specific transaction
-def transaction_detail(request, id):
+def transaction_detail(request):
   try:
-    transaction = Transactoin.objects.get(id=id)
-  except tranasction.DoesNotExist:
-    return Response(status=status.HTTP_404_NOT_FOUND)
-  
+    transaction = Transaction.objects.get(id=request.query_params.get('transaction_id'), portfolio_linked=request.query_params.get('portfolio_linked'))
+  except:
+    return Response('Transaction not found', status=status.HTTP_404_NOT_FOUND)
+
   if request.method == 'PUT':
     serializer = AssetSerializer(transaction, data=request.data, context={'request': request})
     if serializer.is_valid():
@@ -223,5 +218,5 @@ def transaction_detail(request, id):
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
   
   elif request.method == 'DELETE':
-    transaction.delete()
+    transaction.delete()  
     return Response(status=status.HTTP_204_NO_CONTENT)

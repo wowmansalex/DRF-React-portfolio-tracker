@@ -9,6 +9,7 @@ import {
 	fetchLogData,
 	fetchCoins,
 } from '../features/portfolio/portfolioSlice';
+
 // import { fetchGraphData, fetchCoins } from '../features/graphSlice';
 
 import { Button } from 'reactstrap';
@@ -17,24 +18,29 @@ import { Link } from 'react-router-dom';
 import AssetList from '../components/AssetsList';
 import Graph from '../components/Graph';
 
-const Main = () => {
+const PortfolioScreen = () => {
 	const dispatch = useDispatch();
+	const user = useSelector(state => state.auth);
 
-	const allFetch = [
+	const portfolioFetch = [
 		fetchPortfolio(),
 		fetchAssets(),
 		fetchTransactions(),
-		// fetchLogData(),
+		fetchLogData(),
 	];
 
 	const fetchAllData = () => {
-		allFetch.map(fetch => dispatch(fetch));
+		portfolioFetch.map(fetch => dispatch(fetch));
 	};
 
 	useEffect(() => {
-		fetchAllData();
-		const timer = setTimeout(() => fetchAllData(), 10000);
-		return () => clearTimeout(timer);
+		if (user.userToken == null) {
+			console.log('No user token');
+		} else {
+			fetchAllData();
+			const timer = setTimeout(() => fetchAllData(), 10000);
+			return () => clearTimeout(timer);
+		}
 	}, []);
 
 	const portfolio = useSelector(state => state.portfolio);
@@ -50,7 +56,7 @@ const Main = () => {
 					}).format(portfolio.balance)}
 				</div>
 			</div>
-			<div>Graph</div>
+			<Graph />
 			<div className='d-flex justify-content-between'>
 				<h4 className=''>Your Assets</h4>
 				<Button>
@@ -68,4 +74,4 @@ const Main = () => {
 	);
 };
 
-export default Main;
+export default PortfolioScreen;

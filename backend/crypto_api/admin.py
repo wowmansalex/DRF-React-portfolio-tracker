@@ -14,7 +14,7 @@ class TransactionAdmin(admin.ModelAdmin):
     list_display = ['id', 'portfolio_linked', 'coin', 'transaction_type', 'price']
 
 class Log_DataAdmin(admin.ModelAdmin):
-    list_display = ['data_logged', 'updated', 'current_balance']   
+    list_display = ['portfolio_linked', 'data_logged', 'updated', 'current_balance']   
 
 admin.site.register(CustomUser, UserAdmin)
 

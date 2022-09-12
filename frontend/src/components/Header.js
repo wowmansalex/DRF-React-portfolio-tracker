@@ -14,7 +14,7 @@ import {
 import { logout, getUserDetails } from '../features/auth/authSlice';
 
 const Header = () => {
-	const { userInfo, userToken } = useSelector(state => state.auth);
+	const { loggedIn, userInfo, userToken } = useSelector(state => state.auth);
 	const dispatch = useDispatch();
 
 	useEffect(() => {
@@ -27,16 +27,14 @@ const Header = () => {
 				<NavLink href='/'>Portfolio Tracker</NavLink>
 			</NavbarBrand>
 			<Nav>
-				{userInfo ? (
+				{userToken ? (
 					<div>
 						<NavItem>
-							<NavLink>
-								<button
-									className='btn btn-secondary'
-									onClick={() => dispatch(logout())}>
-									Logout
-								</button>
-							</NavLink>
+							<button
+								className='btn btn-secondary'
+								onClick={() => dispatch(logout())}>
+								Logout
+							</button>
 						</NavItem>
 					</div>
 				) : (

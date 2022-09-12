@@ -2,46 +2,32 @@ import React, { useEffect } from 'react';
 
 import { useDispatch, useSelector } from 'react-redux';
 
-import {
-	fetchAssets,
-	fetchTransactions,
-	fetchPortfolio,
-} from './features/portfolio/portfolioSlice';
-// import { fetchGraphData, fetchCoins } from '../features/graphSlice';
+import { checkedLoggedIn, getUserDetails } from './features/auth/authSlice';
 
 import PortfolioScreen from './screens/PortfolioScreen';
 
-import { Button } from 'reactstrap';
-import { Link } from 'react-router-dom';
+import LoginScreen from './screens/LogInScreen';
 
-const Main = () => {
+const App = () => {
 	const dispatch = useDispatch();
 
-	const allFetch = [
-		fetchAssets(),
-		fetchTransactions(),
-		fetchPortfolio(),
-		// fetchGraphData(),
-		// fetchCoins(),
-	];
+	const user = useSelector(state => state.auth);
+
+	const userFetch = [checkedLoggedIn, getUserDetails];
 
 	const fetchAllData = () => {
-		allFetch.map(fetch => dispatch(fetch));
+		userFetch.map(fetch => dispatch(fetch));
 	};
 
 	useEffect(() => {
 		fetchAllData();
-		const timer = setTimeout(() => fetchAllData(), 10000);
-		return () => clearTimeout(timer);
 	}, []);
-
-	const portfolio = useSelector(state => state.portfolio);
 
 	return (
 		<div className='container'>
-			<PortfolioScreen />
+			{user.userToken ? <PortfolioScreen /> : <LoginScreen />}
 		</div>
 	);
 };
 
-export default Main;
+export default App;

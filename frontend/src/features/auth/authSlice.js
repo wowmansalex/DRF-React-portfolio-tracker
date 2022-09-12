@@ -29,7 +29,6 @@ export const loginUser = createAsyncThunk(
 			let res = await api.post('/api/token/', { email, password });
 
 			let data = res.data;
-			console.log(data);
 			localStorage.setItem('userToken', data.access);
 			return data;
 
@@ -48,7 +47,6 @@ export const getUserDetails = createAsyncThunk(
 	'user/getUserDetails',
 	async (_, { getState, rejectWithValue }) => {
 		try {
-			console.log(token);
 			const config = {
 				headers: {
 					Authorization: `Bearer ${token}`,
@@ -68,10 +66,10 @@ export const getUserDetails = createAsyncThunk(
 
 const initialState = {
 	loading: false,
+	loggedIn: false,
 	userInfo: null,
 	userToken: token,
 	error: null,
-	success: false,
 };
 
 export const authSlice = createSlice({
@@ -81,9 +79,13 @@ export const authSlice = createSlice({
 		logout: state => {
 			localStorage.removeItem('userToken');
 			state.loading = false;
+			state.loggedIn = false;
 			state.userInfo = null;
 			state.userToken = null;
 			state.error = null;
+		},
+		checkedLoggedIn: state => {
+			state.userToken ? (state.loggedIn = true) : (state.loggedIn = false);
 		},
 	},
 	extraReducers: {
@@ -105,8 +107,8 @@ export const authSlice = createSlice({
 		},
 		[loginUser.fulfilled]: (state, { payload }) => {
 			state.loading = false;
+			state.loggedIn = true;
 			state.userInfo = payload;
-			state.success = true;
 			state.userToken = payload.access;
 		},
 		[loginUser.rejected]: (state, { payload }) => {
@@ -123,10 +125,14 @@ export const authSlice = createSlice({
 		},
 		[getUserDetails.rejected]: (state, { payload }) => {
 			state.loading = false;
+			if (payload == 'Request failed with status code 401') {
+				state.userToken = null;
+				state.loggedIn = false;
+			}
 			state.error = payload;
 		},
 	},
 });
 
 export default authSlice.reducer;
-export const { logout } = authSlice.actions;
+export const { checkedLoggedIn, logout } = authSlice.actions;

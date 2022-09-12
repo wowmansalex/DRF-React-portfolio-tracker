@@ -4,7 +4,7 @@ from django.db.models import Avg, Q
 from django.utils.translation import gettext_lazy as _
 
 from django.contrib.auth.models import User, AbstractUser
-from django.db.models.signals import post_save, pre_save, post_delete
+from django.db.models.signals import post_save, pre_save, post_delete, pre_delete
 
 from django.dispatch import receiver
 import requests
@@ -64,7 +64,7 @@ class Transaction(models.Model):
 class Log_Data(models.Model):
   id = models.AutoField(primary_key=True)
   description = models.TextField()
-  portfolio_linked = models.ForeignKey(Portfolio, on_delete=models.CASCADE)
+  portfolio_linked = models.CharField(max_length=255)
   data_logged = models.CharField(max_length=255)
   current_balance = models.FloatField()
   updated = models.DateTimeField(auto_now=True)
@@ -74,21 +74,20 @@ class Log_Data(models.Model):
 
 @receiver(pre_save, sender=Transaction)
 def transaction_created(instance, *args, **kwargs):
-  print('signal triggered')
   if instance.transaction_type == 'buy':
     
     if Asset.objects.filter(name=instance.coin, portfolio=instance.portfolio_linked).exists():
-      print('buy signal triggered')
       portfolio = Portfolio.objects.get(name=instance.portfolio_linked)
       asset = Asset.objects.get(name=instance.coin)
 
       value = getattr(Asset.objects.get(name=instance.coin), 'value')
       amount = getattr(Asset.objects.get(name=instance.coin), 'amount')
       
+      asset.value = value + (instance.price * instance.amount)
       asset.amount = amount + instance.amount
       asset.save()
       
-      # Log_Data.objects.create(description='transaction-buy', data_logged='transaction', current_balance=portfolio.balance)
+      Log_Data.objects.create(portfolio_linked=instance.portfolio_linked, description='transaction-buy', data_logged='transaction', current_balance=portfolio.balance)
     else: 
       portfolio = Portfolio.objects.get(name=instance.portfolio_linked)
       Asset.objects.create(name=instance.coin, amount=instance.amount, portfolio=portfolio, value=(instance.price*instance.amount))
@@ -103,21 +102,20 @@ def transaction_created(instance, *args, **kwargs):
       asset.amount = instance.amount
       asset.save()
 
-      Log_Data.objects.create(description='transaction-buy-created', data_logged='transaction', current_balance=portfolio.balance)
 
   elif instance.transaction_type == 'sell':
     if Asset.objects.filter(name=instance.coin).exists():
       value = getattr(Asset.objects.get(name=instance.coin), 'value')
       amount = getattr(Asset.objects.get(name=instance.coin), 'amount')
       asset = Asset.objects.get(name=instance.coin)
-      
-      response = requests.get('https://api.coingecko.com/api/v3/simple/price', params={'ids':instance.coin, 'vs_currencies':'usd'}).json()
-      price = response[str(instance.coin).lower()]['usd']
-      instance.price = price
+
+      asset.price = instance.price
       asset.amount = amount - instance.amount
       asset.save()
+
+      if asset.amount <= 0:
+        asset.delete()
       
-      Log_Data.objects.create(description='transaction-sell', data_logged='transaction', current_balance=portfolio.balance)
     else: 
       print('Asset not found')
 
@@ -131,3 +129,11 @@ def calculateAveragePrice(instance, *args, **kwargs):
     asset.average_price = average_price['price__avg']
     asset.save()
 
+@receiver(pre_delete, sender=Transaction)
+def transaction_deleted(instance, *args, **kwargs):
+  asset = Asset.objects.get(name=instance.coin)
+  transactions = Transaction.objects.filter(coin=instance.coin).count()
+  print(transactions)
+
+  if transactions == 1:
+    asset.delete()  

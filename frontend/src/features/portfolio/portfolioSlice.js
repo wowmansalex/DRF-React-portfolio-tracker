@@ -7,6 +7,9 @@ import {
 	PORTFOLIO,
 	ASSET,
 	TRANSACTION,
+	TRANSACTION_ASSET,
+	TRANSACTION_LIST,
+	TRANSACTION_DETAIL,
 	LOG_DATA,
 } from '../../constants/endpoints';
 
@@ -66,7 +69,7 @@ export const fetchTransactions = createAsyncThunk(
 		try {
 			const portfolioLinked = getState().portfolio.id;
 			const response = await api.get(
-				TRANSACTION + `${portfolioLinked}`,
+				TRANSACTION_LIST + `${portfolioLinked}`,
 				config
 			);
 			return response.data;
@@ -84,7 +87,7 @@ export const fetchTransactionByAsset = createAsyncThunk(
 	'transactions/fetchTransactiopnsByAsset',
 	async (coin, { rejectWithValue }) => {
 		try {
-			const response = await api.get(TRANSACTION + `${coin}`, config);
+			const response = await api.get(TRANSACTION_ASSET + `${coin}`, config);
 			return response.data;
 		} catch (error) {
 			if (error.response && error.response.data.message) {
@@ -102,7 +105,7 @@ export const createNewTransaction = createAsyncThunk(
 		try {
 			const portfolioLinked = getState().portfolio.portfolio_name;
 			const response = await api.post(
-				TRANSACTION + `${portfolioLinked}`,
+				TRANSACTION_LIST + `${portfolioLinked}`,
 				data,
 				config
 			);
@@ -117,8 +120,31 @@ export const createNewTransaction = createAsyncThunk(
 	}
 );
 
+export const deleteTransaction = createAsyncThunk(
+	'transaction/deleteTransaction',
+	async (id, { getState, rejectWithValue }) => {
+		try {
+			const portfolioLinked = getState().portfolio.id;
+			const config_delete = {
+				headers: {
+					Authorization: `Bearer ${token}`,
+				},
+				params: { transaction_id: id, portfolio_linked: portfolioLinked },
+			};
+			const response = await api.delete(TRANSACTION_DETAIL, config_delete);
+			return response.data;
+		} catch (error) {
+			if (error.response && error.response.data.message) {
+				return rejectWithValue(error.response.data.message);
+			} else {
+				return rejectWithValue(error.message);
+			}
+		}
+	}
+);
+
 export const fetchLogData = createAsyncThunk(
-	'graphData/getLogData',
+	'logData/getLogData',
 	async (_, { getState, rejectWithValue }) => {
 		try {
 			const portfolioLinked = getState().portfolio.id;
@@ -135,7 +161,7 @@ export const fetchLogData = createAsyncThunk(
 	}
 );
 
-export const fetchCoins = createAsyncThunk('graphData/fetchCoins', async () => {
+export const fetchCoins = createAsyncThunk('logData/fetchCoins', async () => {
 	const response = await axios.get(
 		'https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=100&page=1'
 	);
@@ -146,7 +172,7 @@ const initialState = {
 	id: 1,
 	portfolio_name: 'test',
 	assets: [],
-	trannsactions: [],
+	transactions: [],
 	balance: 0,
 	logData: {
 		coin_names: [],
@@ -155,6 +181,8 @@ const initialState = {
 	},
 	isLoading: false,
 	error: '',
+	success: false,
+	deleted: false,
 };
 
 const portfolioSlice = createSlice({
@@ -207,9 +235,22 @@ const portfolioSlice = createSlice({
 		[createNewTransaction.fulfilled]: (state, { payload }) => {
 			console.log(payload, 'creating transaction fulfilled');
 			state.transactions.push(payload);
+			state.deleted = false;
 		},
 		[createNewTransaction.rejected]: () => {
 			console.log('creating transaction rejected');
+		},
+		[deleteTransaction.pending]: () => {
+			console.log('delete transaction pending');
+		},
+		[deleteTransaction.fulfilled]: (state, { payload }) => {
+			state.deleted = true;
+			console.log('delete transaction fulfilled');
+		},
+		[deleteTransaction.rejected]: (state, { payload }) => {
+			state.success = false;
+			state.error = payload;
+			console.log('delete transaction rejected');
 		},
 		[fetchTransactionByAsset.pending]: () => {
 			console.log('fetching transaction by asset pending');
@@ -223,10 +264,10 @@ const portfolioSlice = createSlice({
 		},
 		[fetchLogData.pending]: state => {
 			state.isLoading = true;
-			console.log('fetch graph data pending');
+			console.log('fetch log data pending');
 		},
 		[fetchLogData.fulfilled]: (state, { payload }) => {
-			state.logData.balance = payload.map(item => {
+			state.logData.current_balance = payload.map(item => {
 				return item['current_balance'];
 			});
 			state.logData.timestamp = payload.map(item => {
@@ -236,11 +277,11 @@ const portfolioSlice = createSlice({
 					timeZone: 'UTC',
 				});
 			});
-			console.log('fetch graph data fulfilled');
+			console.log(payload, 'fetch log data fulfilled');
 		},
 		[fetchLogData.rejected]: state => {
 			state.isLoading = false;
-			console.log('fetch graph data fulfilled');
+			console.log('fetch log data fulfilled');
 		},
 		[fetchCoins.pending]: state => {
 			state.isLoading = true;

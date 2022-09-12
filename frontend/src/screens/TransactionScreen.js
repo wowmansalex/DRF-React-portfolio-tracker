@@ -8,11 +8,11 @@ import { fetchAssets } from '../features/portfolio/portfolioSlice';
 import { fetchTransactionByAsset } from '../features/portfolio/portfolioSlice';
 
 import { Table } from 'reactstrap';
+import Actions from '../components/Actions';
 
 const TransactionList = () => {
 	const dispatch = useDispatch();
-	const { assets } = useSelector(state => state.assets);
-	const { transactions } = useSelector(state => state.transactions);
+	const transactions = useSelector(state => state.portfolio.transactions);
 	let asset = useParams();
 
 	useEffect(() => {
@@ -45,7 +45,9 @@ const TransactionList = () => {
 										}).format(transaction.price)}
 									</td>
 									<td>{transaction.amount}</td>
-									<td>Placeholder for actions</td>
+									<td>
+										<Actions id={transaction.id} />
+									</td>
 								</tr>
 							);
 						})}
