@@ -15,11 +15,12 @@ import LogInScreen from './screens/LogInScreen';
 import RegisterScreen from './screens/RegisterScreen';
 import NewTransactionScreen from './screens/NewTransactionScreen';
 import TransactionForm from './screens/TransactionScreen';
+import PortfolioForm from './screens/PortfolioForm';
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
 	<Provider store={store}>
-		<>
+		<div>
 			<BrowserRouter>
 				<Header />
 				<Routes>
@@ -41,8 +42,11 @@ root.render(
 					<Route
 						path='/register'
 						element={<RegisterScreen />}></Route>
+					<Route
+						path='/add-portfolio'
+						element={<PortfolioForm />}></Route>
 				</Routes>
 			</BrowserRouter>
-		</>
+		</div>
 	</Provider>
 );

@@ -21,31 +21,33 @@ const Login = () => {
 	};
 
 	return (
-		<form onSubmit={handleSubmit(submitForm)}>
-			<div className='form-group'>
-				<label htmlFor='email'>Email</label>
-				<input
-					type='email'
-					className='form-input'
-					{...register('email')}
-					required
-				/>
-			</div>
-			<div className='form-group'>
-				<label htmlFor='password'>Password</label>
-				<input
-					type='password'
-					className='form-input'
-					{...register('password')}
-					required
-				/>
-			</div>
-			<button
-				type='submit'
-				className='button'>
-				Login
-			</button>
-		</form>
+		<div className='login-form mx-auto'>
+			<form onSubmit={handleSubmit(submitForm)}>
+				<div className='form-group my-2'>
+					<label htmlFor='email'>Email</label>
+					<input
+						type='email'
+						className='form-control'
+						{...register('email')}
+						required
+					/>
+				</div>
+				<div className='form-group my-2'>
+					<label htmlFor='password'>Password</label>
+					<input
+						type='password'
+						className='form-control'
+						{...register('password')}
+						required
+					/>
+				</div>
+				<button
+					type='submit'
+					className='btn-light'>
+					Login
+				</button>
+			</form>
+		</div>
 	);
 };
 

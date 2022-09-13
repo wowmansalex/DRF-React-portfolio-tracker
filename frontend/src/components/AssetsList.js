@@ -7,11 +7,13 @@ import { Link } from 'react-router-dom';
 
 import { Table } from 'reactstrap';
 
+import Loading from '../components/Loading';
+
 const AssetList = () => {
 	const dispatch = useDispatch();
 
 	const { assets } = useSelector(state => state.portfolio.assets);
-	console.log(assets);
+	const isLoading = useSelector(state => state.portfolio.isLoading);
 
 	useEffect(() => {
 		assets.map(asset => {
@@ -21,7 +23,7 @@ const AssetList = () => {
 
 	return (
 		<div>
-			<Table>
+			<Table className='assets'>
 				<thead>
 					<tr>
 						<th></th>
@@ -37,7 +39,10 @@ const AssetList = () => {
 					</tr>
 				</thead>
 				<tbody>
-					{assets &&
+					{isLoading ? (
+						<Loading />
+					) : (
+						assets &&
 						assets.map((asset, index) => {
 							return (
 								<tr key={index}>
@@ -57,14 +62,18 @@ const AssetList = () => {
 											currency: 'USD',
 										}).format(asset.current_price)}
 									</td>
-									<td>
-										{new Intl.NumberFormat('default', {
-											style: 'percent',
-											minimumFractionDigits: 2,
-											maximumFractionDigits: 2,
-										}).format(
-											(asset.price_24h - asset.current_price) / asset.price_24h
-										)}
+									<td
+										className={
+											Math.sign(
+												parseInt(
+													(asset.price_24h - asset.current_price) /
+														asset.current_price
+												)
+											) == -1
+												? 'negative'
+												: 'positive'
+										}>
+										{(asset.current_price - asset.price_24h) / asset.price_24h}
 									</td>
 									<td>{asset.amount}</td>
 									<td>
@@ -90,7 +99,7 @@ const AssetList = () => {
 									</td>
 									<td>
 										<Link
-											className='text-decoration-none'
+											className='link'
 											to={`/transactions/${asset.name}`}
 											asset={asset.name}>
 											Transactions
@@ -98,7 +107,8 @@ const AssetList = () => {
 									</td>
 								</tr>
 							);
-						})}
+						})
+					)}
 				</tbody>
 			</Table>
 		</div>

@@ -46,7 +46,7 @@ class UserSerializer(serializers.ModelSerializer):
 class PortfolioSerializer(serializers.ModelSerializer):
   class Meta:
     model = Portfolio
-    fields = ('name', 'id', 'balance')
+    fields = ('name', 'id', 'user', 'balance')
 
 class AssetSerializer(serializers.ModelSerializer):
   class Meta:
@@ -61,4 +61,4 @@ class TransactionSerializer(serializers.ModelSerializer):
 class LogDataSerializer(serializers.ModelSerializer):
   class Meta:
     model = Log_Data
-    fields = ('portfolio_linked', 'updated', 'description', 'current_balance')
+    fields = ('portfolio_linked', 'updated', 'data_logged', 'current_balance')

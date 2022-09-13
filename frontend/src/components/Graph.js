@@ -16,12 +16,24 @@ const Graph = () => {
 				label: 'Current Balance',
 				data: logData.current_balance,
 				// you can set indiviual colors for each bar
-				backgroundColor: ['rgba(9, 52, 166, 0.8)'],
-
+				backgroundColor: ['rgb(97, 136, 255)'],
+				borderColor: ['rgb(97, 136, 255)'],
 				borderWidth: 1,
 			},
 		],
-		options: {},
+		options: {
+			plugins: {
+				legend: {
+					labels: {
+						// This more specific font property overrides the global property
+						color: 'rgb(255, 255, 255)',
+						font: {
+							size: 14,
+						},
+					},
+				},
+			},
+		},
 	};
 
 	return (

@@ -2,6 +2,14 @@ import React, { useEffect } from 'react';
 
 import { useDispatch, useSelector } from 'react-redux';
 
+import {
+	fetchAssets,
+	fetchTransactions,
+	fetchPortfolio,
+	fetchLogData,
+	fetchCoins,
+} from './features/portfolio/portfolioSlice';
+
 import { checkedLoggedIn, getUserDetails } from './features/auth/authSlice';
 
 import PortfolioScreen from './screens/PortfolioScreen';
@@ -13,19 +21,23 @@ const App = () => {
 
 	const user = useSelector(state => state.auth);
 
-	const userFetch = [checkedLoggedIn, getUserDetails];
+	const allData = [checkedLoggedIn(), getUserDetails()];
 
 	const fetchAllData = () => {
-		userFetch.map(fetch => dispatch(fetch));
+		allData.map(fetch => dispatch(fetch));
 	};
 
 	useEffect(() => {
 		fetchAllData();
-	}, []);
+	}, [user.isLoggedIn]);
 
 	return (
-		<div className='container'>
-			{user.userToken ? <PortfolioScreen /> : <LoginScreen />}
+		<div className='app'>
+			{user.userToken ? (
+				<PortfolioScreen className='general' />
+			) : (
+				<LoginScreen className='general' />
+			)}
 		</div>
 	);
 };

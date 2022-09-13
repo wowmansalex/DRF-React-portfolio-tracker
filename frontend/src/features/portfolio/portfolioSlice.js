@@ -5,6 +5,7 @@ import axios from 'axios';
 
 import {
 	PORTFOLIO,
+	PORTFOLIO_DETAIL,
 	ASSET,
 	TRANSACTION,
 	TRANSACTION_ASSET,
@@ -15,24 +16,20 @@ import {
 
 const token = localStorage.getItem('userToken');
 
-const config = {
-	headers: {
-		Authorization: `Bearer ${token}`,
-	},
-};
+const config = {};
 
 export const fetchPortfolio = createAsyncThunk(
 	'portfolio/fetchPortfolio',
 	async (arg, { getState, rejectWithValue }) => {
 		try {
-			const id = getState().portfolio.id;
 			const config = {
 				headers: {
 					Authorization: `Bearer ${token}`,
 				},
 			};
-			const response = await api.get(PORTFOLIO + `${id}`, config);
+			const response = await api.get(PORTFOLIO_DETAIL, config);
 
+			localStorage.setItem('portfolio name', response.data.name);
 			return response.data;
 		} catch (error) {
 			if (error.response && error.response.data.message) {
@@ -50,8 +47,16 @@ export const fetchAssets = createAsyncThunk(
 	'assets/fetchAssets',
 	async (arg, { getState, rejectWithValue }) => {
 		try {
-			const portfolioId = getState().portfolio.id;
-			const response = await api.get(ASSET + `${portfolioId}`, config);
+			const portfolioLinked = getState().portfolio.id;
+			const config_asset = {
+				headers: {
+					Authorization: `Bearer ${token}`,
+				},
+				params: {
+					portfolio_linked: portfolioLinked,
+				},
+			};
+			const response = await api.get(ASSET, config_asset);
 			return response.data;
 		} catch (error) {
 			if (error.response && error.response.data.message) {
@@ -68,10 +73,15 @@ export const fetchTransactions = createAsyncThunk(
 	async (_, { getState, rejectWithValue }) => {
 		try {
 			const portfolioLinked = getState().portfolio.id;
-			const response = await api.get(
-				TRANSACTION_LIST + `${portfolioLinked}`,
-				config
-			);
+			const config_transaction = {
+				headers: {
+					Authorization: `Bearer ${token}`,
+				},
+				params: {
+					portfolio_linked: portfolioLinked,
+				},
+			};
+			const response = await api.get(TRANSACTION_LIST, config_transaction);
 			return response.data;
 		} catch (error) {
 			if (error.response && error.response.data.message) {
@@ -103,12 +113,49 @@ export const createNewTransaction = createAsyncThunk(
 	'transactions/createNewTransaction',
 	async (data, { getState, rejectWithValue }) => {
 		try {
-			const portfolioLinked = getState().portfolio.portfolio_name;
+			const portfolioLinked = getState().portfolio.id;
+			const config_transaction = {
+				headers: {
+					Authorization: `Bearer ${token}`,
+				},
+			};
+			const params = {
+				...data,
+				portfolio_linked: portfolioLinked,
+			};
+			console.log(portfolioLinked);
 			const response = await api.post(
-				TRANSACTION_LIST + `${portfolioLinked}`,
-				data,
-				config
+				TRANSACTION_LIST,
+				params,
+				config_transaction
 			);
+			return response.data;
+		} catch (error) {
+			if (error.response && error.response.data.message) {
+				return rejectWithValue(error.response.data.message);
+			} else {
+				return rejectWithValue(error.message);
+			}
+		}
+	}
+);
+
+export const createNewPortfolio = createAsyncThunk(
+	'portfolio/createNewPortfolio',
+	async (data, { getState, rejectWithValue }) => {
+		try {
+			const userId = getState().auth.userInfo;
+			const config_portfolio = {
+				headers: {
+					Authorization: `Bearer ${token}`,
+				},
+			};
+			const params = {
+				name: data.name,
+				balance: data.balance,
+				user: userId,
+			};
+			const response = await api.post(PORTFOLIO, params, config);
 			return response.data;
 		} catch (error) {
 			if (error.response && error.response.data.message) {
@@ -147,8 +194,16 @@ export const fetchLogData = createAsyncThunk(
 	'logData/getLogData',
 	async (_, { getState, rejectWithValue }) => {
 		try {
-			const portfolioLinked = getState().portfolio.id;
-			const response = await api.get(LOG_DATA + `${portfolioLinked}`, config);
+			const portfolioLinked = localStorage.getItem('portfolio name');
+			const config_log = {
+				headers: {
+					Authorization: `Bearer ${token}`,
+				},
+				params: {
+					portfolio_linked: portfolioLinked,
+				},
+			};
+			const response = await api.get(LOG_DATA, config_log);
 
 			return response.data;
 		} catch (error) {
@@ -210,8 +265,8 @@ export const fetch24hprice = createAsyncThunk(
 );
 
 const initialState = {
-	id: 1,
-	portfolio_name: 'test',
+	id: null,
+	portfolio_name: '',
 	assets: {
 		price_24hchanges: [],
 		assets: [],
@@ -232,7 +287,16 @@ const initialState = {
 const portfolioSlice = createSlice({
 	name: 'portfolio',
 	initialState,
-	reducers: {},
+	reducers: {
+		portfolioReset: state => {
+			state.id = null;
+			state.portfolio_name = '';
+			state.transactions = [];
+			state.assets.assets = [];
+			state.assets.price_24hchanges = [];
+			state.balance = 0;
+		},
+	},
 	extraReducers: {
 		[fetchPortfolio.pending]: state => {
 			console.log('fetch portfolio pending');
@@ -242,11 +306,14 @@ const portfolioSlice = createSlice({
 			console.log('fetch portfolio fulfilled');
 			state.isLoading = false;
 			state.balance = payload.balance;
+			state.portfolio_name = payload.name;
 			state.id = payload.id;
 		},
 		[fetchPortfolio.rejected]: (state, { payload }) => {
 			console.log('fetch portfolio rejected');
 			state.isLoading = false;
+			state.portfolio_name = null;
+			state.id = null;
 			state.error = payload;
 		},
 		[fetchAssets.pending]: state => {
@@ -284,6 +351,20 @@ const portfolioSlice = createSlice({
 		[createNewTransaction.rejected]: () => {
 			console.log('creating transaction rejected');
 		},
+		[createNewPortfolio.pending]: state => {
+			state.isLoading = true;
+			console.log('creating portfolio pending');
+		},
+		[createNewPortfolio.fulfilled]: (state, { payload }) => {
+			state.isLoading = false;
+			state.portfolio_name = payload.name;
+			state.balance = payload.balance;
+			console.log('creating portfolio pending');
+		},
+		[createNewPortfolio.pending]: (state, { payload }) => {
+			state.error = payload;
+			console.log('creating portfolio pending');
+		},
 		[deleteTransaction.pending]: () => {
 			console.log('delete transaction pending');
 		},
@@ -292,7 +373,6 @@ const portfolioSlice = createSlice({
 			console.log('delete transaction fulfilled');
 		},
 		[deleteTransaction.rejected]: (state, { payload }) => {
-			state.success = false;
 			state.error = payload;
 			console.log('delete transaction rejected');
 		},
@@ -356,5 +436,5 @@ const portfolioSlice = createSlice({
 	},
 });
 
-export const {} = portfolioSlice.actions;
+export const { portfolioReset } = portfolioSlice.actions;
 export default portfolioSlice.reducer;

@@ -12,40 +12,58 @@ import {
 } from 'reactstrap';
 
 import { logout, getUserDetails } from '../features/auth/authSlice';
+import { portfolioReset } from '../features/portfolio/portfolioSlice';
 
 const Header = () => {
 	const { loggedIn, userInfo, userToken } = useSelector(state => state.auth);
 	const dispatch = useDispatch();
+
+	const logOut = () => {
+		dispatch(portfolioReset());
+		dispatch(logout());
+	};
 
 	useEffect(() => {
 		dispatch(getUserDetails());
 	}, []);
 
 	return (
-		<Navbar className='text-center'>
+		<Navbar className='header text-center'>
 			<NavbarBrand>
-				<NavLink href='/'>Portfolio Tracker</NavLink>
+				<NavLink
+					className='header-title'
+					href='/'>
+					Portfolio Tracker
+				</NavLink>
 			</NavbarBrand>
 			<Nav>
 				{userToken ? (
-					<div>
+					<Nav>
 						<NavItem>
 							<button
-								className='btn btn-secondary'
-								onClick={() => dispatch(logout())}>
+								className='link-light btn btn-link'
+								onClick={() => logOut()}>
 								Logout
 							</button>
 						</NavItem>
-					</div>
+					</Nav>
 				) : (
-					<div>
+					<Nav>
 						<NavItem>
-							<NavLink href='/login'>Login</NavLink>
+							<NavLink
+								className='link-light'
+								href='/login'>
+								Login
+							</NavLink>
 						</NavItem>
 						<NavItem>
-							<NavLink href='/register'>Register</NavLink>
+							<NavLink
+								className='link-light'
+								href='/register'>
+								Register
+							</NavLink>
 						</NavItem>
-					</div>
+					</Nav>
 				)}
 			</Nav>
 		</Navbar>

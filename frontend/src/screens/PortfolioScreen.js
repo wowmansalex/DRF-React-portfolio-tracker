@@ -10,10 +10,9 @@ import {
 	fetchCoins,
 } from '../features/portfolio/portfolioSlice';
 
-// import { fetchGraphData, fetchCoins } from '../features/graphSlice';
+import { getUserDetails } from '../features/auth/authSlice';
 
-import { Button } from 'reactstrap';
-import Loading from '../components/Loading';
+import NewPortfolioScreen from '../screens/NewPortfolioScreen';
 
 import AssetList from '../components/AssetsList';
 import Graph from '../components/Graph';
@@ -23,6 +22,7 @@ const PortfolioScreen = () => {
 	const user = useSelector(state => state.auth);
 
 	const portfolioFetch = [
+		getUserDetails(),
 		fetchPortfolio(),
 		fetchAssets(),
 		fetchTransactions(),
@@ -42,12 +42,15 @@ const PortfolioScreen = () => {
 			const timer = setTimeout(() => fetchAllData(), 10000);
 			return () => clearTimeout(timer);
 		}
+
+		if (portfolio.portfolio_name == null) {
+		}
 	}, []);
 
 	const portfolio = useSelector(state => state.portfolio);
 
 	return (
-		<div className='container'>
+		<div className='assets container'>
 			<div>
 				<div>
 					<h4>Current Balance</h4>
@@ -61,16 +64,18 @@ const PortfolioScreen = () => {
 				<Graph />
 				<div className='d-flex justify-content-between'>
 					<h4 className=''>Your Assets</h4>
-					<Button>
-						<a
-							className='text-light text-decoration-none'
-							href='/add-transaction'>
-							Add New
-						</a>
-					</Button>
+					<a
+						className='btn-light'
+						href='/add-transaction'>
+						Add New
+					</a>
 				</div>
 				<div>
-					<AssetList />
+					{portfolio.portfolio_name == null ? (
+						<NewPortfolioScreen />
+					) : (
+						<AssetList />
+					)}
 				</div>
 			</div>
 		</div>

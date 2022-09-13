@@ -7,6 +7,7 @@ import {
 	createNewTransaction,
 	fetchLogData,
 	fetchCoins,
+	fetchPortfolio,
 } from '../features/portfolio/portfolioSlice';
 
 import axios from 'axios';
@@ -18,6 +19,7 @@ const NewTransactionForm = () => {
 	let navigate = useNavigate();
 
 	const portfolio = useSelector(state => state.portfolio);
+	console.log(portfolio.id);
 
 	const [formInput, setFormInput] = useState({
 		transaction_type: '',
@@ -30,6 +32,7 @@ const NewTransactionForm = () => {
 	});
 
 	useEffect(() => {
+		dispatch(fetchPortfolio());
 		dispatch(fetchCoins());
 		let date = new Date(formInput.date_added)
 			.toLocaleDateString('en-GB')
@@ -74,7 +77,6 @@ const NewTransactionForm = () => {
 				[event.target.name]: event.target.value,
 			});
 		}
-		console.log(event.target.value);
 	};
 
 	const handleSubmit = event => {

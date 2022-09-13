@@ -37,7 +37,7 @@ def getRoutes(request):
 @permission_classes([IsAuthenticated])
 def user_details(request):
   if request.method == 'GET':
-    data = request.user.email
+    data = request.user.user_id
     
     return Response({'response': data}, status=status.HTTP_200_OK)
   return Response(null, status=status.HTTP_400_BAD_REQUEST)
@@ -48,12 +48,14 @@ def user_details(request):
 # post new portfolio created by authenticated user
 def portfolio_list(request):
   if request.method == 'GET':
-    data = Portfolio.objects.get(user=request.user.username)
+    print(request.user.email)
+    data = Portfolio.objects.get(user=request.user.email)
 
     serializer = PortfolioSerializer(data, context={'request': request}, many=True)
     return Response(serializer.data)
 
   elif request.method == 'POST':
+    print(request.data)
     serializer = PortfolioSerializer(data=request.data)
     if serializer.is_valid():
       serializer.save()
@@ -64,9 +66,9 @@ def portfolio_list(request):
 @permission_classes([IsAuthenticated])
 # get all assets linked to portfolio of requested user
 # add a new asset to the selected portfolio
-def asset_list(request, portfolio_id):
+def asset_list(request):
   if request.method == 'GET':
-    data = Asset.objects.filter(portfolio_id=portfolio_id)
+    data = Asset.objects.filter(portfolio_id=request.query_params.get('portfolio_linked'))
 
     for item in data: 
       response_symbol_image = requests.get('https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=100&page=1').json()
@@ -91,6 +93,7 @@ def asset_list(request, portfolio_id):
 
       item.current_price = response_current_price[str(item.symbol).lower()]['usd']
       item.value = item.current_price * item.amount
+
       item.save()
 
     serializer = AssetSerializer(data, context={'request': request}, many=True)
@@ -108,9 +111,9 @@ def asset_list(request, portfolio_id):
 @permission_classes([IsAuthenticated])
 # get all transaction linked to a portfolio
 # create a new transaction
-def transaction_list(request, portfolio_linked):
+def transaction_list(request):
   if request.method == 'GET':
-    data = Transaction.objects.filter(portfolio_linked=portfolio_linked)
+    data = Transaction.objects.filter(portfolio_linked=request.query_params.get('portfolio_linked'))
 
     serializer = TransactionSerializer(data, context={'request': request}, many=True)
     return Response(serializer.data)
@@ -136,11 +139,11 @@ def transaction_list_byAsset(request, coin):
 @api_view(['GET', 'POST']) 
 @permission_classes([IsAuthenticated])
 # get all log data linked to requested portfolio
-def get_log_data(request, portfolio_linked):
+def get_log_data(request):
   if request.method == 'GET':
-    data = Log_Data.objects.all()
+    data = Log_Data.objects.filter(portfolio_linked=request.query_params.get('portfolio_linked'))
+    
     serializer = LogDataSerializer(data, context={'request':request}, many=True)
-
     return Response(serializer.data)
 
   elif request.method == 'POST':
@@ -153,9 +156,10 @@ def get_log_data(request, portfolio_linked):
 @api_view(['GET', 'PUT', 'POST', 'DELETE'])
 @permission_classes([IsAuthenticated])
 # get a specific portfolio linked to requested user
-def portfolio_detail(request, portfolio_id):
+def portfolio_detail(request):
   try:
-    data = Portfolio.objects.get(id=portfolio_id)
+    print(request.user.email)
+    data = Portfolio.objects.get(user=request.user.user_id)
   except Portfolio.DoesNotExist:
     return Response(status=status.HTTP_404_NOT_FOUND)
   

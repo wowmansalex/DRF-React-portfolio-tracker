@@ -124,19 +124,25 @@ def transaction_created(instance, *args, **kwargs):
 
 @receiver(post_save, sender=Transaction)
 def calculateAveragePrice(instance, *args, **kwargs):
+  print('average price signal triggered')
   asset = Asset.objects.get(name=instance.coin)
+  transactions_count = Transaction.objects.filter(coin=instance.coin).count()
   transactions = Transaction.objects.filter(portfolio_linked=instance.portfolio_linked)
 
-  for transaction in transactions:
-    average_price = Transaction.objects.filter(coin=instance.coin).aggregate(Avg('price'))
-    asset.average_price = average_price['price__avg']
-    asset.save()
+  if transactions_count < 2: 
+    asset.average_price = instance.current_price
+  else: 
+    for transaction in transactions:
+      average_price = Transaction.objects.filter(coin=instance.coin).aggregate(Avg('price'))
+      asset.average_price = average_price['price__avg']
+      asset.save()
 
 @receiver(pre_delete, sender=Transaction)
 def transaction_deleted(instance, *args, **kwargs):
+  
   asset = Asset.objects.get(name=instance.coin)
   transactions = Transaction.objects.filter(coin=instance.coin).count()
-  print(transactions)
+  
 
   if transactions == 1:
     asset.delete()  

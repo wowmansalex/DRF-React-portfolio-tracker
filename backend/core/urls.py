@@ -18,13 +18,13 @@ urlpatterns = [
 
     #operational endpoints
     path('api/crypto/portfolio/', views.portfolio_list, name="portfolio_list"),
-    path('api/crypto/portfolio/<portfolio_id>', views.portfolio_detail, name='portfolio_detail'),
-    path('api/crypto/assets/<portfolio_id>', views.asset_list, name='asset_list'),
+    path('api/crypto/portfolio/detail', views.portfolio_detail, name='portfolio_detail'),
+    path('api/crypto/assets/', views.asset_list, name='asset_list'),
     path('api/crypto/assets/<asset_id>', views.asset_detail, name='asset_detail'),
-    path('api/crypto/transaction/list/<portfolio_linked>', views.transaction_list, name='transaction_list'),
+    path('api/crypto/transaction/list/', views.transaction_list, name='transaction_list'),
     path('api/crypto/transaction/asset/<coin>', views.transaction_list_byAsset, name='transaction_list_by_asset'),
     path('api/crypto/transaction/detail/', views.transaction_detail, name='transaction_detail'),
 
     #log data endpoints
-    path('api/crypto/log_data/<portfolio_linked>', views.get_log_data)
+    path('api/crypto/log_data/', views.get_log_data)
 ]

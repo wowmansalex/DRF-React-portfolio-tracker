@@ -1,4 +1,5 @@
 export const PORTFOLIO = '/api/crypto/portfolio/';
+export const PORTFOLIO_DETAIL = '/api/crypto/portfolio/detail';
 export const ASSET = '/api/crypto/assets/';
 export const TRANSACTION = '/api/crypto/transaction/';
 export const TRANSACTION_LIST = '/api/crypto/transaction/list/';

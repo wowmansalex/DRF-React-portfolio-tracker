@@ -1,5 +1,86 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@100;300;400;500;600;700;800;900&display=swap');
+
+:root {
+	--general-dark-color: #222531;
+	--general-dark-color-2: #6188ff;
+	--general-dark-color-3: white;
+	--negative-color: rgb(210, 89, 80);
+	--positive-color: rgb(58, 218, 58);
+}
+
+.general {
+	background-color: var(--general-dark-color-3);
+	color: var(--general-dark-color);
+}
+
+.test {
+	background-color: black;
+}
+
+.login-form {
+	width: 500px;
+}
+
+.negative {
+	color: var(--negative-color) !important;
+}
+
+.positive {
+	color: var(--positive-color) !important;
+}
+
+.assets {
+	color: black;
+}
+
+.btn-light {
+	text-decoration: none;
+	font-family: Inter, sans-serif;
+	font-weight: 0;
+	font-size: 14px;
+	color: #fff;
+	background-color: var(--general-dark-color-2);
+	padding: 10px 25px;
+	border: 2px solid var(--general-dark-color-2);
+	border-radius: 10px;
+}
+
+.btn-light:hover {
+	cursor: pointer;
+	text-decoration: none;
+	padding: 10px 25px;
+	background-color: #fff;
+	color: var(--general-dark-color-2);
+	border: solid 2px var(--general-dark-color-2);
+}
+
+.link {
+	text-decoration: none;
+	color: black;
+}
+
+.link-light {
+	text-decoration: none;
+	color: white;
+}
+
+.header {
+	background-color: var(--general-dark-color-2);
+	color: var(--general-dark-color-3);
+	height: 60px;
+	margin-bottom: 20px;
+}
+
+.header-title {
+	color: var(--general-dark-color-3);
+}
+
 .chart {
 	width: 80% !important;
+}
+
+.general {
+	font-family: Inter, Arial;
 }
 
 .container {
