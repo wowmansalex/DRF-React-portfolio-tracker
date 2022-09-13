@@ -26,6 +26,7 @@ const PortfolioScreen = () => {
 		fetchPortfolio(),
 		fetchAssets(),
 		fetchTransactions(),
+		fetchCoins(),
 		fetchLogData(),
 	];
 

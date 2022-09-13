@@ -334,7 +334,7 @@ const portfolioSlice = createSlice({
 		[fetchCoins.fulfilled]: (state, { payload }) => {
 			console.log('fetching coin data fulfilled');
 			state.logData.coin_names = payload.map(item => {
-				return [item['id'], item['name']];
+				return [item['id'], item['name'], item['symbol'], item['image']];
 			});
 		},
 		[fetchCoins.rejected]: state => {

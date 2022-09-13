@@ -22,6 +22,7 @@ const NewTransactionForm = () => {
 	const [formInput, setFormInput] = useState({
 		transaction_type: '',
 		coin: '',
+		symbol: '',
 		amount: '',
 		date_added: '',
 		price: '',
@@ -87,7 +88,7 @@ const NewTransactionForm = () => {
 		<div className='container-md mx-auto row justify-content-center '>
 			<Form onSubmit={handleSubmit}>
 				<FormGroup>
-					<label for='framework'>Select a coin</label>
+					<label htmlFor='select'>Select a coin</label>
 					<select
 						id='select'
 						onChangeCapture={handleChange}>

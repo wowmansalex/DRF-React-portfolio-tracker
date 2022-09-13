@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 
 import { useDispatch, useSelector } from 'react-redux';
 
@@ -8,12 +8,26 @@ import { fetchAssets } from '../features/portfolio/portfolioSlice';
 import { fetchTransactionByAsset } from '../features/portfolio/portfolioSlice';
 
 import { Table } from 'reactstrap';
-import Actions from '../components/Actions';
+
+import { MdDelete, MdEdit } from 'react-icons/md';
+
+import DeleteConfirmation from '../components/DeleteConfirmation';
 
 const TransactionList = () => {
 	const dispatch = useDispatch();
 	const transactions = useSelector(state => state.portfolio.transactions);
 	let asset = useParams();
+
+	const [displayConfirmationModal, setDisplayConfirmationModal] =
+		useState(false);
+
+	const showDeleteModal = () => {
+		setDisplayConfirmationModal(true);
+	};
+
+	const hideDeleteModal = () => {
+		setDisplayConfirmationModal(false);
+	};
 
 	useEffect(() => {
 		dispatch(fetchTransactionByAsset(asset.asset));
@@ -46,7 +60,25 @@ const TransactionList = () => {
 									</td>
 									<td>{transaction.amount}</td>
 									<td>
-										<Actions id={transaction.id} />
+										<div>
+											<button onClick={showDeleteModal}>
+												<MdDelete
+													id='delete'
+													className='mx-1'
+												/>
+											</button>
+											<button>
+												<MdEdit
+													id='edit'
+													className='mx-1'
+												/>
+											</button>
+										</div>
+										<DeleteConfirmation
+											showModal={displayConfirmationModal}
+											hideModal={hideDeleteModal}
+											id={transaction.id}
+										/>
 									</td>
 								</tr>
 							);

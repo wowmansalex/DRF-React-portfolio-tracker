@@ -69,20 +69,27 @@ def asset_list(request, portfolio_id):
     data = Asset.objects.filter(portfolio_id=portfolio_id)
 
     for item in data: 
-      response_current_price = requests.get('https://api.coingecko.com/api/v3/simple/price', params={'ids':item.name, 'vs_currencies':'usd'}).json()
-      response_price_24H = requests.get(f'https://api.coingecko.com/api/v3/coins/{item.name.lower()}/market_chart?vs_currency=usd&days=1').json()
+      response_symbol_image = requests.get('https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=100&page=1').json()
+
+      coin_data = response_symbol_image
+
+      for coin in coin_data:
+        if item.name == coin['name']:       
+          item.symbol = coin['id']
+          item.image = coin['image']
+
+      response_current_price = requests.get('https://api.coingecko.com/api/v3/simple/price', params={'ids':item.symbol, 'vs_currencies':'usd'}).json()
+      response_price_24H = requests.get(f'https://api.coingecko.com/api/v3/coins/{item.symbol}/market_chart?vs_currency=usd&days=1').json()
 
       yesterday = time.time()*1000 - 24*60*60*1000
-      print(yesterday)
+      
+      prices_response = response_price_24H['prices']
 
-      prices = response_price_24H['prices']
-
-      for price in prices:
+      for price in prices_response:
         if  price[0] - yesterday <= 60000:
           item.price_24h = price[1]
-          print(item.price_24h)
 
-      item.current_price = response_current_price[str(item.name).lower()]['usd']
+      item.current_price = response_current_price[str(item.symbol).lower()]['usd']
       item.value = item.current_price * item.amount
       item.save()
 

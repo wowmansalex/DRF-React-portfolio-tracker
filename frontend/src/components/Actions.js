@@ -1,7 +1,7 @@
-import React, { useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { MdDelete, MdEdit, MdEventBusy } from 'react-icons/md';
 
-import { deleteTransaction } from '../features/portfolio/portfolioSlice';
+import DeleteConfirmation from '../components/DeleteConfirmation';
 
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
@@ -11,14 +11,9 @@ const Actions = props => {
 	const navigate = useNavigate();
 	const dispatch = useDispatch();
 
-	const handleClick = event => {
-		dispatch(deleteTransaction(id));
-		navigate('/');
-	};
-
 	return (
 		<div>
-			<button onClick={handleClick}>
+			<button onClick={() => showDeleteModal}>
 				<MdDelete
 					id='delete'
 					className='mx-1'

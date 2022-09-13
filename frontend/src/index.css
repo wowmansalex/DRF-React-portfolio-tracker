@@ -5,3 +5,7 @@
 .container {
 	width: 1050px !important;
 }
+
+.coin-image {
+	width: 25px;
+}

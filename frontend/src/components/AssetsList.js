@@ -24,6 +24,7 @@ const AssetList = () => {
 			<Table>
 				<thead>
 					<tr>
+						<th></th>
 						<th>Coin</th>
 						<th>Current Price</th>
 						<th>24h Change</th>
@@ -40,6 +41,15 @@ const AssetList = () => {
 						assets.map((asset, index) => {
 							return (
 								<tr key={index}>
+									<td>
+										{
+											<img
+												className='coin-image'
+												src={asset.image}
+												alt=''
+											/>
+										}
+									</td>
 									<td>{asset.name}</td>
 									<td>
 										{new Intl.NumberFormat('en-IN', {
